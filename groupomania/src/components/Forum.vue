@@ -623,6 +623,11 @@ export default {
                             button {
                                 width: 35%;
                             }
+                            .coms {
+                                background-color: white;
+                                border: 1.5px solid #8000008f;
+                                margin: 2%;
+                            }
                         }
                     }
                 }
