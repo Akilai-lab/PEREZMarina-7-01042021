@@ -124,17 +124,6 @@ export default {
             </div>
           </li>
         </ul>
-        
-        <!-- fin list-->
-        <!--divider-->
-        <span class="divider"></span>
-        <!--list acceder aux reglages et aide du site-->
-        <ul>
-          <li>Settings</li>
-          <li>Help</li>
-        </ul>
-        <!-- fin list-->
-        <span class="divider"></span>
       </div>
     <router-view/>
   </div>
