@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <title>Mon Application Vue.js</title>
+</head>
+<body>
+  <div id="blocCentral">
+    <!--bloc posts central-->
+    <div class="post">
+      <ul>
+        <li>
+          <img src="./assets/quote-left-solid.svg" alt="icone" title="icone" />
+          <p>Share an update</p>
+        </li>
+        <li>
+          <img src="./assets/camera-retro-solid.svg" alt="icone" title="icone" />
+          <p>Upload a photo</p>
+        </li>
+        <li>
+          <img src="./assets/edit-solid.svg" alt="icone" title="icone" />
+          <p>Share a post</p>
+        </li>
+      </ul>
+      <div class="blocPost">
+        <form>
+          <textarea value="What's on your mind?"></textarea>
+          <input type="submit" value="submit">
+        </form>
+        <img src="./assets/file-import-solid.svg" alt="iconeJoin" title="icone join doc" />
+        <img src="./assets/camera-retro-solid.svg" alt="takePicure" title="take a picture" />
+      </div>
+      <!--bloc filtres pour afficher les posts-->
+      <div class="connections">
+        <label for="connections">Connections Only</label>
+      <select name="postsFriends" id="postsFriends">
+        <!--afficher les posts contenant des mots clefs-->
+          <option value=""></option>
+          <option value="postsKey">Posts Key</option>
+      </select>
+      </div>
+      <div class="Popular">
+        <label for="popular">Sort by Popular</label>
+        <!--afficher les posts les plus consultés-->
+      <select name="popular" id="popular">
+          <option value=""></option>
+          <option value="popularPosts">Popular Posts</option>
+      </select>
+      </div>
+      <div class="posts">
+        <div class="post">
+          <img src="" alt="iconeUser" title="iconeUser" />
+          <p>Name of User <span> - post employed</span> <span>date publication</span></p>
+          <p>Commentaire postes</p>
+          <button type="submit" value="reply"><img src="" alt="submit" title="submit"></button>
+        </div>
+      </div>
+    </div>
+    <!--fin bloc posts-->
+  </div>
+    <div id="app">
+        <h1>Ma première application Vue.js !</h1>
+
+        <p>J'ai hâte de créer des applications incroyables !</p>
+    </div>
+    <script>
+    // Vue n'est pas encore chargé donc une ReferenceError devrait être retournée
+    console.log(Vue)
+    </script>
+    <!--<script src="https://cdn.jsdelivr.net/npm/vue>"></script>-->
+    <script>
+      const app = new Vue({
+        el: '#app'
+      })
+    </script>
+</body>
+</html>
