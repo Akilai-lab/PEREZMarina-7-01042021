@@ -200,6 +200,11 @@ data() {
       flex-direction: column;
       .picture {
         margin: 2% auto;
+        img {
+          border-radius: 50%;
+          height: 200px;
+          width: 150px;
+        }
       }
     }
   }
@@ -212,6 +217,13 @@ data() {
       width: 100%;
       margin: 0;
       padding: 0;
+      .picture {
+        img {
+          border-radius: 50%;
+          height: 200px;
+          width: 150px;
+        }
+      }
     }
     .userActivity {
       width: initial;
