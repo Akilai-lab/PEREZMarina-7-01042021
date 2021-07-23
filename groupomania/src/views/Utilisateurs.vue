@@ -9,7 +9,7 @@
                     <p>{{ u.name }}</p>
                     <p>{{ u.lastName }}</p>
                     <!--<router-link to="/Account" v-on:click="doanything">Account</router-link>-->
-                    <router-link @click.native="moreInfo(u)" v-bind:to="'/accountAdmin/'+ u.id" style="color: white;background-color: cadetblue;padding: 10px 20px;border-radius: 50%;">join-us</router-link>
+                    <router-link @click.native="moreInfo(u)" v-bind:to="'/accountAdmin/'+ u.id" style="color: white;background-color: cadetblue;padding: 10px 20px;border-radius: 50%;">voir plus</router-link>
                     <!-- Si le status de l'user est admin alors ajouter un button de suppression de profil -->
                     <div class="delete" v-if="userId == 11" @click="deleteUser(u.id)">
                     </div>
@@ -21,7 +21,7 @@
                     <p>{{ u.name }}</p>
                     <p>{{ u.lastName }}</p>
                     <!--<router-link to="/Account" v-on:click="doanything">Account</router-link>-->
-                    <router-link @click.native="moreInfo(u)" v-bind:to="'/accountAdmin/'+ u.id" style="color: white;background-color: cadetblue;padding: 10px 20px;border-radius: 50%;">join-us</router-link>
+                    <router-link @click.native="moreInfo(u)" v-bind:to="'/accountAdmin/'+ u.id" style="color: white;background-color: cadetblue;padding: 10px 20px;border-radius: 50%;">voir plus</router-link>
                     <!-- Si le status de l'user est admin alors ajouter un button de suppression de profil -->
                     <div class="delete" v-if="userId == 11" @click="deleteUser(u.id)">
                     </div>
