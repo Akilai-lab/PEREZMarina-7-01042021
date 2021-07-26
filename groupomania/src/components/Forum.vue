@@ -32,9 +32,18 @@ export default {
             var formData = new FormData();
             let img = document.getElementById('picture').files[0];
             // methode fonctionne le seul problème est l'affichage des images
-            formData.append('picture', img);
-            formData.append('message', this.message);
-            //console.log(...formData);
+            if(img && this.message != "") {
+                formData.append('picture', img);
+                formData.append('message', this.message);
+            }
+            else if(img) {
+                formData.append('picture', img);
+            }
+            else if(this.message != "") {
+                formData.append('message', this.message);
+            }
+            
+            console.log(...formData);
             console.log(img);
             const monObjet = JSON.parse(localStorage.getItem('token'));
 
@@ -58,16 +67,20 @@ export default {
             });
         },
         addComment(item) {
-            document.getElementById('submit').style.display="block";
+            document.getElementById('info').style.display="block";
             document.getElementById('form').style.display="block";
             for(let i of this.test) {
-                if(item.id===i.id){           
+                if(item.id===i.id){
+                    /**    z-index: 1; */      
+                    document.getElementById('info').style.position="fixed";
+                    document.getElementById('info').style.zIndex="2";
+                    document.getElementById('info').style.bottom="30%";
+                    document.getElementById('info').style.width="35%";
                     document.getElementById('info').style.border = "1px solid blueviolet";
                     document.getElementById('info').style.backgroundColor = "antiquewhite";
                     document.getElementById('info').style.display = "flex";
                     document.getElementById('info').style.flexDirection = "column-reverse";
-                    document.getElementById('info').style.width = "85%";
-                    document.getElementById('info').style.margin = "0 auto";
+                    document.getElementById('info').style.margin = "0 15%";
                     document.getElementById('info').innerHTML+=`
                     <h2>${item.id}</h2>
                     <p>${item.message}</p>
@@ -122,19 +135,18 @@ export default {
                 }
             }
         },
-        modifyPost(item) {
-            console.log(item.id);
+        modifyPost() {
             console.log(this.newResult);
             var formData = new FormData();
             formData.append('postId', this.newResult);
             let nextImg = document.getElementById('newPicture').files[0];
             // methode fonctionne le seul problème est l'affichage des images
-            formData.append('picture', nextImg);
-            console.log(nextImg);
-            /**
-             * il faut à présent gérer l'authorisation pour que la route post 
-             * enregistre le commentaire dans la bdd */
-            formData.append('message', this.newMessage);
+            if(nextImg != undefined) {
+                formData.append('picture', nextImg);
+            }
+            if(this.newMessage != undefined) {
+                formData.append('message', this.newMessage);
+            }
             console.log(...formData);
             //formData.append('textDescription', this.descript);
             //Pour modifier un post, il faut pouvoir créer un formulaire qui va changer les données dans la bdd
@@ -186,13 +198,21 @@ export default {
             });
         },
         modifComActu(com){
-            /*display:flex;flex-direction:column-reverse;*/
-            document.getElementById('infoHidden').style.display="flex";
-            document.getElementById('infoHidden').style.flexDirection="column";
-            for(let i of this.test) {
-                if(com===i.id){        
+            console.log(com);
+            /*On récupére l'attribut qui est l'id du commentaire*/
+            document.getElementById('infoHiddenCom').style.display="flex";
+            document.getElementById('infoHiddenCom').style.flexDirection="column";
+            document.getElementById('infoHiddenCom').style.alignItems="center";       
+            for(let i of this.commentsShow) {
+                /*On va boucles sur les élémens du tableau des posts*/
+                /* et dire que si le postId du commentaire est égale à l'id du post */
+                //i.id est le numéro du post
+                if(com===i.id){   
+                    console.log(com)
+                    console.log(i.id)
                     this.comResult = com;
                     console.log(this.comResult);
+                    //envoi 20 à la bdd et pas 24 pourquoi?
                     return this.comResult;
                 }
             }
@@ -204,9 +224,8 @@ export default {
             console.log(this.newComment);
             //formData.append('textDescription', this.descript);
             var formData = new FormData();
-            formData.append('postId', this.comResult);
             formData.append('message', this.newComment);
-            formData.append('id', com)
+            formData.append('id', this.comResult)
             console.log(...formData);
             //Pour modifier un post, il faut pouvoir créer un formulaire qui va changer les données dans la bdd
             const monObjet = JSON.parse(localStorage.getItem('token'));
@@ -222,9 +241,9 @@ export default {
                 console.log(response);
                 console.log(auth);
             })
-            /*.then(()=> {
+            .then(()=> {
                 window.location.replace('/Forum');
-            })*/
+            })
             /*.then(()=> {
                 alert('votre commentaire a été supprimé');
                 //window.location.reload();
@@ -316,13 +335,15 @@ export default {
             <div id="post">
                 <div id="blocPost">
                     <div class="ssBloc" v-for="item of test" :key="item">
-                        <div id="info">
+                        <div>
+                        <div id="info" style="display:none;">
                         </div>
-                        <form id="form" style="width:83%;display: none;margin: 0px auto;">
-                            <textarea v-model="comment" style="width:100%" rows="6">
-                            </textarea>
+                        <form id="form" style="display:none;width:83%;width: 35%;margin: 0px 15%;position:fixed;top:70%; z-index:1;">
+                            <textarea v-model="comment" style="width:100%;padding: inherit;" rows="12" cols="12">
+                            </textarea> 
+                            <button type="button" @click="publish()">Envoyer</button>
                         </form>
-                        <button type="button" id="submit" v-on:click="publish(item)" style="display: none;margin: 0 auto;">Envoyer</button>
+                        </div>
                         <div class="user">
                             <!--<img src="../../assets/user-circle-regular.png" alt="iconeUser" title="iconeUser" />-->
                             <p>Name of User {{ item.id }}</p>
@@ -334,19 +355,18 @@ export default {
                                     <p>{{item.message}}</p>
                                     <img v-bind:src="item.media" class="img"/>
                                 </div>
-
+                                <p>{{item.userId}}</p>
                                 <div class="choice" v-if="status === 1 || userId === item.userId">
                                     <div class="effectIcones">
-                                        <div class="modify" v-on:click="modifPostActu(item.id)" >
-                                            <form id="hidden" enctype='multipart/form-data' style="display: none;margin:0; width:500px;position: relative;right: 200px;bottom: 88px;">
-                                                <input type="text" placeholder="What's on your mind?" v-model="newMessage" style="width: 100%; margin-top:20px;box-shadow: 2px 2px 2em rgb(0 0 0 / 16%);filter: invert(1);border:none;height: 200px;">
-                                                <div class="iconePicture" style="filter: invert(1);"></div>
-                                                <input id="newPicture" accept="image/*" type="file" style="position: relative;bottom: 30px;left: 40px;filter: invert(1);">
-                                                <button type="button" @click="modifyPost(item)" style="padding: 10px 12px;color: white;text-transform: uppercase;font-weight: bold;background-color: #ff5722;border: none;border-radius: 20px;filter: invert(1);">Poster</button>
-                                            </form>
-                                                <!--Ca crée un formulaire pour tous les posts pour les modifier
-                                                On veux juste développer un formulaire en fonction de l'icone cliquée-->
+                                        <div class="modify" v-on:click="modifPostActu(item.id)">
                                         </div>
+                                        <form id="hidden" enctype='multipart/form-data' style="display: none;margin:0; width:500px;position: relative;right: 200px;bottom: 88px;">
+                                            <input type="text" placeholder="What's on your mind?" v-model="newMessage" style="width: 100%; margin-top:20px;box-shadow: 2px 2px 2em rgb(0 0 0 / 16%);filter: invert(1);border:none;height: 200px;">
+                                            <div class="iconePicture" style="filter: invert(1);"></div>
+                                            <input id="newPicture" accept="image/*" type="file" style="position: relative;bottom: 30px;left: 40px;filter: invert(1);">
+                                            <button type="button" @click="modifyPost(newResult)" style="padding: 10px 12px;color: white;text-transform: uppercase;font-weight: bold;background-color: #ff5722;border: none;border-radius: 20px;filter: invert(1);">Poster</button>
+                                        </form>
+                                                <!--on peut modifier le post mais il faut faire en sorte de pouvoir le modifier sans ajouter de photo-->
                                     </div>
                                     <div class="effectIcones">
                                         <div class="delete" @click="deletePost(item)">
@@ -354,28 +374,29 @@ export default {
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                        <button @click="addComment(item)"> Ajouter un commentaire
+                
+                        </button>
                             <div v-for="com of commentsShow" :key="com">
                                 <div class="coms" v-if="com.postId === item.id">
                                     <div style="display: flex;flex-direction: column;align-items: center;">
                                         <p>{{ com.date }}</p>
                                         <p>{{ com.message }}</p>
-                                        <div class="choice" v-if="userId === com.userId">               
+                                        <p>{{item.id}}</p><!--correspond au numéro du post-->
+                                        <div class="choice" v-if="status === 1 || userId === item.userId">               
                                             <!--Ca crée un formulaire pour tous les posts pour les modifier
                                             On veux juste développer un formulaire en fonction de l'icone cliquée-->
                                             <div class="effectIcones">
-                                                <div class="modify" v-on:click="modifComActu(com.postId)">
-                                                    <div id="infoHidden" style="display:none;border:1px solid blueviolet;background-color:antiquewhite;width:500px;height:fit-content;margin:0 auto;position:relative;right: 210px;">
-                                                        <h2>{{item.id}}</h2>
-                                                        <p>{{item.message}}</p>
-                                                        <img v-bind:src="item.media" style="width: auto;height: 200px;object-fit: contain;" />
-                                                        <p>{{item.date}}</p>
-                                                        <form enctype='multipart/form-data' style="margin: auto; width: 95%;position: relative;">
-                                                            <textarea v-model="newComment" style="width:100%" rows="6">
-                                                            </textarea>
-                                                            <button type="button" @click="modifyComment(com.id)">Envoyer</button>
-                                                        </form>
-                                                    </div>
+                                                <div class="modify" v-on:click="modifComActu(com.id)">
+                                                    <!-- On va modifier le commentaire, pour ca il faut récupérer l'id du commentaire-->
                                                 </div>
+                                                <form id="infoHiddenCom" enctype='multipart/form-data' style="display:none;width:60%;left:27%;margin: auto; position: fixed;height:100%;">
+                                                    <textarea v-model="newComment" style="width:100%; margin:0 auto;" rows="6">
+                                                    </textarea>
+                                                    <button type="button" @click="modifyComment(com.id)">Envoyer</button>
+                                                    <p>{{comResult}}</p>
+                                                </form>
                                             </div>
                                                 <!--Ca crée un formulaire pour tous les posts pour les modifier
                                                 On veux juste développer un formulaire en fonction de l'icone cliquée-->
@@ -387,10 +408,6 @@ export default {
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        <button @click="addComment(item)"> Ajouter un commentaire
-                
-                        </button>
                     </div>
                 </div>
             </div>
@@ -520,49 +537,6 @@ export default {
                     }
                 }
             }
-                .coms {
-                    .choice {
-                        display: flex;
-                        width: 25%;
-                        justify-content: space-evenly;
-                        height: 20px;
-                        margin: 20px;
-                        .effectIcones {
-                            width: 40px;
-                            height: 40px;
-                            border-radius: 20px;
-                            background-color: #ff5722ab;
-                            justify-content: center;
-                            align-items: center;
-                            display: flex;
-                            .modify {
-                                background-image : url('./../assets/icones/edit-regular.svg');
-                                width: 25px;
-                                height: 23px;
-                                filter: invert(1);
-                                background-repeat: no-repeat;
-                                background-size: cover;
-                            }
-                        }
-                        .effectIcones {
-                            width: 40px;
-                            height: 40px;
-                            border-radius: 20px;
-                            background-color: #ff5722ab;
-                            justify-content: center;
-                            align-items: center;
-                            display: flex;
-                            .delete {
-                                background-image : url('./../assets/icones/trash-alt-regular.svg');
-                                width: 25px;
-                                height: 23px;
-                                filter: invert(1);
-                                background-repeat: no-repeat;
-                                background-size: cover;
-                            }
-                        }
-                    }                
-                }
         }
         .img {
             width: 15%;
@@ -577,6 +551,49 @@ export default {
             border: none;
             margin-bottom: 2%;
             border-radius: 20px;
+        }
+        .coms {
+            .choice {
+                display: flex;
+                width: 25%;
+                justify-content: space-evenly;
+                height: 20px;
+                margin: 20px;
+                .effectIcones {
+                    width: 40px;
+                    height: 40px;
+                    border-radius: 20px;
+                    background-color: #ff5722ab;
+                    justify-content: center;
+                    align-items: center;
+                    display: flex;
+                    .modify {
+                        background-image : url('./../assets/icones/edit-regular.svg');
+                        width: 25px;
+                        height: 23px;
+                        filter: invert(1);
+                        background-repeat: no-repeat;
+                        background-size: cover;
+                    }
+                }
+                .effectIcones {
+                    width: 40px;
+                    height: 40px;
+                    border-radius: 20px;
+                    background-color: #ff5722ab;
+                    justify-content: center;
+                    align-items: center;
+                    display: flex;
+                    .delete {
+                        background-image : url('./../assets/icones/trash-alt-regular.svg');
+                        width: 25px;
+                        height: 23px;
+                        filter: invert(1);
+                        background-repeat: no-repeat;
+                        background-size: cover;
+                    }
+                }
+            }                
         }
     }
 }
