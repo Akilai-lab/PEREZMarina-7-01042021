@@ -11,7 +11,8 @@
           <input id="picture" accept="image/*" type="file" style="position: relative;bottom: 30px;left: 40px;">
           <!-- Condition qui dit que si status est celui d'un admin -->
           <!-- Alors input id picture n'apparait pas -->
-          <button @click="newPicture">Changer de photo</button>
+          <button @click="newPicture">Ajouter photo</button>
+          <button @click="newPict" class="button">Changer de photo</button>
         </form>
       </div>
       <div id="detailsUser">
@@ -107,13 +108,37 @@ export default {
       var formData = new FormData();
       let img = document.getElementById('picture').files[0];
       // methode fonctionne le seul problème est l'affichage des images
-      formData.append('picture', img);
+      formData.set('picture', img);
       console.log(...formData);
       console.log(img);
       const monObjet = JSON.parse(localStorage.getItem('token'));
       let auth = 'bearer' + " " + monObjet.token;
       console.log(auth);
       axios.post("http://localhost:3030/api/account", formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'Authorization': auth
+        }
+      })
+      .then(function (response) {
+        console.log(response);
+        console.log(auth);
+      })
+      .catch(function (error) {
+        this.output = error;
+      });
+    },
+    newPict() {
+      var formData = new FormData();
+      let img = document.getElementById('picture').files[0];
+      // methode fonctionne le seul problème est l'affichage des images
+      formData.set('picture', img);
+      console.log(...formData);
+      console.log(img);
+      const monObjet = JSON.parse(localStorage.getItem('token'));
+      let auth = 'bearer' + " " + monObjet.token;
+      console.log(auth);
+      axios.put("http://localhost:3030/api/account/picture", formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           'Authorization': auth
@@ -194,6 +219,17 @@ export default {
         button {
           color: white;
           background-color: cadetblue;
+          padding: 10px 20px;
+          border-radius: 50%;
+          border: 2px solid white;
+          padding: 5%;
+          font-size: 12px;
+          text-transform: uppercase;
+          font-weight: bold;
+        }
+        .button {
+          color: white;
+          background-color: #55bec1;
           padding: 10px 20px;
           border-radius: 50%;
           border: 2px solid white;
