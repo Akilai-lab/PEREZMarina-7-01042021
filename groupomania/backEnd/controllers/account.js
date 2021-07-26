@@ -42,6 +42,33 @@ exports.postPicture = async (req, res, next) => {
       res.status(400).json({ error })
   });
 };
+exports.putPicture=async(req,res,next) => {
+  const token = req.headers.authorization.split(' ')[1];
+  const decodedToken = jwt.verify(token, 'RANDOM_TOKEN_SECRET');
+  const userId = decodedToken.userId;
+  console.log(req.body)
+  const handleSuccessfulDeletion = () => {
+    res.sendStatus(200);
+  }
+  const handleError = (error) => {
+    error => res.status(500).json({ error })
+  }
+  //console.log(req.body.email);
+  let pict = req.body.picture;
+  console.log(pict);
+  Account.findOne({ where: { userId: userId } })
+  .then(picture => {
+    // Check if record exists in db
+    let newPicture = `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
+    picture.update({
+        media: newPicture
+    })
+    console.log(picture);
+    res.send(picture);
+  })
+  //.then(handleSuccessfulDeletion)
+  .catch(handleError)
+};
 exports.getPicture= async (req, res, next) => {
   const token = req.headers.authorization.split(' ')[1];
   const decodedToken = jwt.verify(token, 'RANDOM_TOKEN_SECRET');
