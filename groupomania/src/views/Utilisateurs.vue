@@ -107,6 +107,9 @@ export default {
                 alert('votre compte a été supprimé');
                 console.log("l'utilisateur est désinscrit")
             })
+            .then(()=> {
+                window.location.replace('/Utilisateurs');
+            })
             .catch(function (error) {
                 console.log(error);
             });
@@ -204,7 +207,7 @@ export default {
 //responsive mobile
 @media all and (max-width: 767px) {
     .allMyUtilisateurs {
-        height: 900px;
+        height: inherit;
         .Utilisateurs {
             .utilisateur {
                 margin: 0 70px 170px 70px;
