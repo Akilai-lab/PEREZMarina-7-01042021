@@ -8,6 +8,7 @@ const multer = require('../middleware/multer-config');
 router.get('/:id', users.idShow);
 router.get('/', auth, multer, users.getPicture);
 router.post('/', auth, multer, users.postPicture);
+router.put('/picture', auth, multer, users.putPicture);
 router.put('/', auth, multer,users.postDescription);
 // router.get('/id/{userId}', users.idShow);
 /*router.post('/api/user', auth, userCtrl.signup);
