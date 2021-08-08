@@ -1,73 +1,69 @@
 const User = require ('../models/users');
 const Account = require('../models/account'); 
 const jwt = require('jsonwebtoken');
-
-  //idShow route get
+const fs = require('fs');
 exports.idShow = async (req, res, next) => {
-  //Recuper varaible URL Id User
-  console.log('test');
-  //console.log(req.params.id);
   User.findOne({ where: {id: req.params.id} })
-  //User.findByPk(req.params.id)
   .then(user=>{
-    //console.log(user)
-    //res.send(user);
-    console.log(user)
     res.status(200);
-    res.send(user)
+    res.send(user);
+    res.send('user');
   })
   .catch(error => res.status(500).json({ error }));
 };
 
-//idShow route post
 exports.postPicture = async (req, res, next) => {
   const token = req.headers.authorization.split(' ')[1];
   const decodedToken = jwt.verify(token, 'RANDOM_TOKEN_SECRET');
   const userId = decodedToken.userId;
-
   const postsObject = req.body;
-  console.log(postsObject);
-  Account.create({ 
-      'media': `${req.protocol}://${req.get('host')}/images/${req.file.filename}`,
-      //(node:13208) UnhandledPromiseRejectionWarning: ReferenceError: userId is not defined
-      'userId' : userId
+  Account.findOne({
+    where: {
+      userId : userId
+    }
   })
-  .then(() => {
-      console.log(userId);
-      //console.log(Posts);
-      res.sendStatus(200);
+  .then(account => {
+    if(!account) {
+      Account.create({ 
+        'media': `${req.protocol}://${req.get('host')}/images/${req.file.filename}`,
+        'userId' : userId
+      })
+      .then( accountUser => {
+        User.findOne({where:{id: userId}})
+        .then(user => {
+          console.log(accountUser.id)
+          user.update({
+            'accountId': accountUser.id
+          })
+        })
+        res.sendStatus(200);
+      })
+      .catch(error => {
+          console.log(error);
+          res.status(400).json({ error })
+      });
+    }
+    const filename = account.media.split("/images/")[1];
+    console.log(filename);
+    fs.unlink(`images/${filename}`, function (err) {
+      if (err) throw err;
+      console.log('File deleted!');
+    });
+    console.log(filename);
+        account.update({
+          'media': `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
+        })
+        .then(() => {
+          res.status(200).json();
+        })
+        .catch(error => {
+          res.status(400).json({ error })
+        })
   })
   .catch(error => {
-      console.log(error);
-      res.status(400).json({ error })
+    console.log(error);
+    res.status(400).json({ error })
   });
-};
-exports.putPicture=async(req,res,next) => {
-  const token = req.headers.authorization.split(' ')[1];
-  const decodedToken = jwt.verify(token, 'RANDOM_TOKEN_SECRET');
-  const userId = decodedToken.userId;
-  console.log(req.body)
-  const handleSuccessfulDeletion = () => {
-    res.sendStatus(200);
-  }
-  const handleError = (error) => {
-    error => res.status(500).json({ error })
-  }
-  //console.log(req.body.email);
-  let pict = req.body.picture;
-  console.log(pict);
-  Account.findOne({ where: { userId: userId } })
-  .then(picture => {
-    // Check if record exists in db
-    let newPicture = `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
-    picture.update({
-        media: newPicture
-    })
-    console.log(picture);
-    res.send(picture);
-  })
-  //.then(handleSuccessfulDeletion)
-  .catch(handleError)
 };
 exports.getPicture= async (req, res, next) => {
   const token = req.headers.authorization.split(' ')[1];
@@ -75,11 +71,6 @@ exports.getPicture= async (req, res, next) => {
   const userId = decodedToken.userId;
   const account = Account.findOne({ where: { userId:userId} })
         .then(profil => {
-            console.log('et je suis là')
-            console.log(profil);
-            /*profil.forEach((Account) => {
-              console.log(Account.media);
-            });*/
             res.send(profil);
             res.sendStatus(200);
         })
@@ -87,8 +78,15 @@ exports.getPicture= async (req, res, next) => {
             console.log(error);
             res.status(400).json({ error })
         })
-}
-
+};
+exports.getAllPictures = async (req, res, next) => {
+  Account.findAll()
+  .then(account=>{
+    console.log(account);
+    res.send(account);
+  })
+  .catch(error => res.status(500).json({ error }));
+};
 exports.postDescription = async (req, res, next) => {
   const token = req.headers.authorization.split(' ')[1];
   const decodedToken = jwt.verify(token, 'RANDOM_TOKEN_SECRET');
@@ -100,20 +98,38 @@ exports.postDescription = async (req, res, next) => {
   const handleError = (error) => {
     error => res.status(500).json({ error })
   }
-  //console.log(req.body.email);
-  let test = req.body.textDescription;
+  let test;
   console.log(test);
   Account.findOne({ where: { userId: userId } })
   .then(description => {
-    // Check if record exists in db
-    let scndTest = test
-    description.update({
-        textDescription: scndTest
-    })
-    console.log(description);
-    res.send(description);
+    if(!description) {
+      Account.create({ 
+        'textDescription': req.body.textDescription,
+        'userId' : userId
+      })
+      .then(accountUser => {
+        User.findOne({where:{id: userId}})
+        .then(user => {
+          console.log(accountUser.id)
+          user.update({
+            'accountId': accountUser.id
+          })
+        })
+        console.log(Account)
+          res.sendStatus(200);
+      })
+      .catch(error => {
+          console.log(error);
+          res.status(400).json({ error })
+      });
+    }
+    test = description.textDescription;
+    if(test != "") {
+      description.update({
+        'textDescription': req.body.textDescription
+      });
+      console.log(description)
+    }
   })
-  //.then(handleSuccessfulDeletion)
   .catch(handleError)
 };
-//modifyAccount
