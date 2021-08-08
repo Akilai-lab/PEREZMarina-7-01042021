@@ -77,20 +77,28 @@ exports.modifyComment = async (req , res, next) =>{
     })
     //.then(handleSuccessfulDeletion)
     .catch(handleError)
-    if(userId===11) {
-        Comments.findOne({ where: { id: req.body.id} })
-        .then(comment => {
-            // Check if record exists in db
-            comment.update({
-                message: req.body.message
+    User.findOne({
+        where:{
+            status : 1,
+            id : userId
+        }
+    })
+    .then(user => {
+        if(user.status === 1) {
+            Comments.findOne({ where: { id: req.body.id} })
+            .then(comment => {
+                // Check if record exists in db
+                comment.update({
+                    message: req.body.message
+                })
+                console.log('re hey');
+                console.log(comment);
+                res.send(comment);
             })
-            console.log('re hey');
-            console.log(comment);
-            res.send(comment);
-        })
-        //.then(handleSuccessfulDeletion)
-        .catch(handleError)
-    }
+            //.then(handleSuccessfulDeletion)
+            .catch(handleError)
+        }
+    })
 };
 exports.deleteComment = async (req , res, next) =>{
     const token = req.headers.authorization.split(' ')[1];
