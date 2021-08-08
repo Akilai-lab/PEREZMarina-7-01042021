@@ -23,15 +23,20 @@ export default {
         modifCom : false,
         newMessage : null,
         userId : null,
-        status : null
+        status : null,
+        idUser : null,
+        userNameUser: "",
+        arrayPost: [],
+        arrayPostDetails: [],
+        isModifyPost : false,
+        isModifyComment : false 
+
       };
     },
     methods: {
         addPost() {
-        //editer un post  editPost
             var formData = new FormData();
             let img = document.getElementById('picture').files[0];
-            // methode fonctionne le seul problème est l'affichage des images
             if(img && this.message != "") {
                 formData.append('picture', img);
                 formData.append('message', this.message);
@@ -70,8 +75,7 @@ export default {
             document.getElementById('info').style.display="block";
             document.getElementById('form').style.display="block";
             for(let i of this.test) {
-                if(item.id===i.id){
-                    /**    z-index: 1; */      
+                if(item.id===i.id){   
                     document.getElementById('info').style.position="fixed";
                     document.getElementById('info').style.zIndex="2";
                     document.getElementById('info').style.bottom="30%";
@@ -97,9 +101,6 @@ export default {
             console.log(this.comment)
             var formData = new FormData();
             formData.append('postId', this.result);
-            /**
-             * il faut à présent gérer l'authorisation pour que la route post 
-             * enregistre le commentaire dans la bdd */
             formData.append('message', this.comment);
             console.log(...formData);
             const monObjet = JSON.parse(localStorage.getItem('token'));
@@ -126,6 +127,8 @@ export default {
         modifPostActu(item) { 
             console.log(item);
             console.log(this.test);
+            this.isModifyPost = true;
+            this.isModifyComment = true;
             document.getElementById('hidden').style.display = "block";
             for(let i of this.test) {
                 if(item===i.id){           
@@ -140,16 +143,13 @@ export default {
             var formData = new FormData();
             formData.append('postId', this.newResult);
             let nextImg = document.getElementById('newPicture').files[0];
-            // methode fonctionne le seul problème est l'affichage des images
             if(nextImg != undefined) {
                 formData.append('picture', nextImg);
             }
-            if(this.newMessage != undefined) {
+            if(this.newMessage != null) {
                 formData.append('message', this.newMessage);
             }
             console.log(...formData);
-            //formData.append('textDescription', this.descript);
-            //Pour modifier un post, il faut pouvoir créer un formulaire qui va changer les données dans la bdd
             const monObjet = JSON.parse(localStorage.getItem('token'));
             let auth = 'bearer' + " " + monObjet.token;
             console.log(auth);
@@ -161,6 +161,7 @@ export default {
             })
             .then(function (response) {
                 console.log(response);
+                console.log('response');
                 console.log(auth);
             })
             .then(()=> {
@@ -182,8 +183,6 @@ export default {
                 headers: {
                     'Authorization': auth
                 }
-                //les données liées au commentaire apparaissent mais la requête a comme erreur 404 not found
-                //Pourquoi?
             }) 
             .then(function (response) {
                 console.log(response);
@@ -199,20 +198,17 @@ export default {
         },
         modifComActu(com){
             console.log(com);
-            /*On récupére l'attribut qui est l'id du commentaire*/
+            this.isModifyComment = true;
+            this.isModifyPost = true;
             document.getElementById('infoHiddenCom').style.display="flex";
             document.getElementById('infoHiddenCom').style.flexDirection="column";
             document.getElementById('infoHiddenCom').style.alignItems="center";       
             for(let i of this.commentsShow) {
-                /*On va boucles sur les élémens du tableau des posts*/
-                /* et dire que si le postId du commentaire est égale à l'id du post */
-                //i.id est le numéro du post
                 if(com===i.id){   
                     console.log(com)
                     console.log(i.id)
                     this.comResult = com;
                     console.log(this.comResult);
-                    //envoi 20 à la bdd et pas 24 pourquoi?
                     return this.comResult;
                 }
             }
@@ -222,12 +218,10 @@ export default {
             console.log(com);
             console.log(this.comResult);
             console.log(this.newComment);
-            //formData.append('textDescription', this.descript);
             var formData = new FormData();
             formData.append('message', this.newComment);
             formData.append('id', this.comResult)
             console.log(...formData);
-            //Pour modifier un post, il faut pouvoir créer un formulaire qui va changer les données dans la bdd
             const monObjet = JSON.parse(localStorage.getItem('token'));
             let auth = 'bearer' + " " + monObjet.token;
             console.log(auth);
@@ -244,10 +238,6 @@ export default {
             .then(()=> {
                 window.location.replace('/Forum');
             })
-            /*.then(()=> {
-                alert('votre commentaire a été supprimé');
-                //window.location.reload();
-            })*/
             .catch(function (error) {
                 this.output = error;
             });
@@ -263,8 +253,6 @@ export default {
                 headers: {
                     'Authorization': auth
                 }
-                //les données liées au commentaire apparaissent mais la requête a comme erreur 404 not found
-                //Pourquoi?
             }) 
             .then(function (response) {
                 console.log(response);
@@ -287,10 +275,12 @@ export default {
         }
         })
         .then(response => {
+            console.log(response.data)
             this.status = response.data.status;
             console.log(this.status);
             this.userId = response.data.id;
-            console.log(this.userId)
+            console.log(this.userId);
+            this.userName = response.data.userName;
             localStorage.setItem('userId',this.userId);
             return this.userId;
         })
@@ -299,19 +289,34 @@ export default {
         });
         axios.get("http://localhost:3030/api/post")
         .then(response => {
-            //console.log(response);
+            console.log(response);
             this.test = response.data;
             console.log(this.test);
+        })
+        .then(()=> {
+            axios.get("http://localhost:3030/api/user/all")
+            .then(response => {
+                console.log(response.data)
+                for(let i of response.data) {
+                    this.arrayPost = {
+                        id : i.id,
+                        userName : i.userName
+                    }
+                    this.arrayPostDetails.push(this.arrayPost)
+                }
+                console.log(this.arrayPostDetails);
+            })
+            .catch(function (error) {
+            this.output = error;
+            });
         })
         .catch(function (error) {
             this.output = error;
         });
         axios.get("http://localhost:3030/api/comment")
         .then(response => {
-            //console.log(response);
             this.commentsShow = response.data;
-            this.postIdShow = true;//ici vue que true partout, s'affiche partout
-            //les commentaires s'affichent à chaque posts et non en fonction du postId
+            this.postIdShow = true;
         })
         .catch(function (error) {
             this.output = error;
@@ -334,20 +339,21 @@ export default {
         <div class="posts">
             <div id="post">
                 <div id="blocPost">
-                    <div class="ssBloc" v-for="item of test" :key="item">
+                    <div class="ssBloc" v-for="item of this.test" :key="item">
                         <div>
-                        <div id="info" style="display:none;">
-                        </div>
-                        <form id="form" style="display:none;width:83%;width: 35%;margin: 0px 15%;position:fixed;top:70%; z-index:1;">
-                            <textarea v-model="comment" style="width:100%;padding: inherit;" rows="12" cols="12">
-                            </textarea> 
-                            <button type="button" @click="publish()">Envoyer</button>
-                        </form>
+                            <div id="info" style="display:none;">
+                            </div>
+                            <form id="form" style="display:none;width:83%;width: 35%;margin: 0px 15%;position:fixed;top:70%; z-index:1;">
+                                <textarea v-model="comment" style="width:100%;padding: inherit;" rows="12" cols="12">
+                                </textarea> 
+                                <button type="button" @click="publish()">Envoyer</button>
+                            </form>
                         </div>
                         <div class="user">
-                            <!--<img src="../../assets/user-circle-regular.png" alt="iconeUser" title="iconeUser" />-->
-                            <p>Name of User {{ item.id }}</p>
                             <p class="date">{{ item.date }}</p>
+                            <div v-for="info of arrayPostDetails" :key="info">
+                                <p v-if="info.id === item.userId">{{info.userName}}</p>
+                            </div>
                         </div>
                         <div class ="details">
                             <div class="placement" style="width: 90%;margin: 0 auto;display: flex;justify-content: space-evenly;">
@@ -355,56 +361,59 @@ export default {
                                     <p>{{item.message}}</p>
                                     <img v-bind:src="item.media" class="img"/>
                                 </div>
-                                <p>{{item.userId}}</p>
+                                <form id="hidden" enctype='multipart/form-data' style="display: none;width: 60%;left: 28%;margin: auto;position: fixed;background-color: #f7ccbb;padding: 5%;flex-direction: column;align-items: center;border: 2.5px solid orange;">
+                                    <input type="text" placeholder="What's on your mind?" v-model="newMessage" style="width: 100%; margin-top:20px;box-shadow: 2px 2px 2em rgb(0 0 0 / 16%);border:none;height: 200px;">
+                                    <div class="iconePicture"></div>
+                                    <input id="newPicture" accept="image/*" type="file" style="position: relative;bottom: 30px;left: 40px;">
+                                    <button type="button" @click="modifyPost(newResult)" style="padding: 10px 12px;color: white;text-transform: uppercase;font-weight: bold;background-color: #ff5722;border: none;border-radius: 20px;">Poster</button>
+                                </form>
                                 <div class="choice" v-if="status === 1 || userId === item.userId">
-                                    <div class="effectIcones">
+                                    <div class="effectIcones" v-if="isModifyPost === false">
                                         <div class="modify" v-on:click="modifPostActu(item.id)">
                                         </div>
-                                        <form id="hidden" enctype='multipart/form-data' style="display: none;margin:0; width:500px;position: relative;right: 200px;bottom: 88px;">
-                                            <input type="text" placeholder="What's on your mind?" v-model="newMessage" style="width: 100%; margin-top:20px;box-shadow: 2px 2px 2em rgb(0 0 0 / 16%);filter: invert(1);border:none;height: 200px;">
-                                            <div class="iconePicture" style="filter: invert(1);"></div>
-                                            <input id="newPicture" accept="image/*" type="file" style="position: relative;bottom: 30px;left: 40px;filter: invert(1);">
-                                            <button type="button" @click="modifyPost(newResult)" style="padding: 10px 12px;color: white;text-transform: uppercase;font-weight: bold;background-color: #ff5722;border: none;border-radius: 20px;filter: invert(1);">Poster</button>
-                                        </form>
-                                                <!--on peut modifier le post mais il faut faire en sorte de pouvoir le modifier sans ajouter de photo-->
                                     </div>
-                                    <div class="effectIcones">
+                                    <div class="effectIcones" v-if="isModifyPost === false">
                                         <div class="delete" @click="deletePost(item)">
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <button @click="addComment(item)"> Ajouter un commentaire
+                        <button @click="addComment(item)" v-if="isModifyPost === false"> Ajouter un commentaire
+                
+                        </button>
+                        <button @click="addComment(item)" v-if="isModifyPost === true|| isModifyComment === true" disabled> Ajouter un commentaire
                 
                         </button>
                             <div v-for="com of commentsShow" :key="com">
                                 <div class="coms" v-if="com.postId === item.id">
                                     <div style="display: flex;flex-direction: column;align-items: center;">
+                                    <div v-for="info of arrayPostDetails" :key="info">
+                                        <p v-if="info.id === com.userId">{{info.userName}}</p>
+                                    </div>
                                         <p>{{ com.date }}</p>
                                         <p>{{ com.message }}</p>
-                                        <p>{{item.id}}</p><!--correspond au numéro du post-->
-                                        <div class="choice" v-if="status === 1 || userId === item.userId">               
+                                        <div class="choice" v-if="status === 1 || userId === com.userId">              
                                             <!--Ca crée un formulaire pour tous les posts pour les modifier
                                             On veux juste développer un formulaire en fonction de l'icone cliquée-->
-                                            <div class="effectIcones">
+                                            <div class="effectIcones" v-if="isModifyComment === false">
                                                 <div class="modify" v-on:click="modifComActu(com.id)">
                                                     <!-- On va modifier le commentaire, pour ca il faut récupérer l'id du commentaire-->
                                                 </div>
-                                                <form id="infoHiddenCom" enctype='multipart/form-data' style="display:none;width:60%;left:27%;margin: auto; position: fixed;height:100%;">
-                                                    <textarea v-model="newComment" style="width:100%; margin:0 auto;" rows="6">
-                                                    </textarea>
-                                                    <button type="button" @click="modifyComment(com.id)">Envoyer</button>
-                                                    <p>{{comResult}}</p>
-                                                </form>
                                             </div>
                                                 <!--Ca crée un formulaire pour tous les posts pour les modifier
                                                 On veux juste développer un formulaire en fonction de l'icone cliquée-->
-                                            <div class="effectIcones">
+                                            <div class="effectIcones" v-if="isModifyComment === false">
                                                 <div class="delete" @click="deleteComment(com)">
                                                 </div>
                                             </div>
                                         </div>
+                                        <p v-if="isModifyComment === true" style="font-weight: bold;"> Modifiez votre commentaire :</p>
+                                        <form id="infoHiddenCom" enctype='multipart/form-data' style="display:none;width:80%;margin: auto;height:100%;">
+                                            <textarea v-model="newComment" style="width:100%; margin:0 auto;" rows="6">
+                                            </textarea>
+                                            <button type="button" @click="modifyComment(com.id)">Envoyer</button>
+                                        </form> 
                                     </div>
                                 </div>
                             </div>
@@ -647,12 +656,15 @@ export default {
                             }
                         }
                     }
+                    .img {
+                        width: 50%;
+                    }
                 }
             }
         }
     }
 }
-//responsive mobile
+//responsive tablette
 @media all and (max-width: 767px) {
     .forum {
         width: 100%;
@@ -719,6 +731,41 @@ export default {
                                 margin: 2%;
                             }
                         }
+                    }
+                }
+            }
+        }
+    }
+}
+@media all and (min-width: 300px) and (max-width: 766px) {
+    .forum {
+        width: 100%;
+        #blocCentral {
+            .img {
+                width: 95%;
+            }
+            #hidden {
+                left: auto !important;
+                top: 20%;
+            }
+            .choice {
+                width: inherit !important;
+            }
+            .coms {
+                #infoHiddenCom {
+                    form {
+                        left: 20% !important;
+                        top: 20% !important;
+                    }
+                }
+                .choice {
+                    width: inherit !important;
+                    height: inherit;
+                    .effectIcones {
+                        margin: 5%;
+                        width: 55px;
+                        height: 47px;
+                        border-radius: 50%;
                     }
                 }
             }
