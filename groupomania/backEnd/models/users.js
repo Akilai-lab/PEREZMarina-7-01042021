@@ -39,4 +39,5 @@ const User =  db.define('users', {
 User.hasMany(Posts);
 //user peux avoir plusieurs posts
 User.hasMany(Comments);
+
 module.exports = User;
