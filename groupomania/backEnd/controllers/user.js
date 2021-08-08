@@ -1,5 +1,6 @@
 const User = require ('../models/users');
 const Posts = require ('../models/posts');
+const Account = require('../models/account'); 
 const Comment = require ('../models/commentaires');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
@@ -27,6 +28,7 @@ exports.signup = async (req, res, next) => {
          .then(() => {
              console.log(User);
              res.send(200);
+             /**Création d'un account à l'inscription d'un utilisateur */
          })
          .catch(error => {
              console.log(error);
@@ -64,6 +66,8 @@ exports.login = async (req, res, next) => {
                     { expiresIn: '24h' }
                   )
               });
+              console.log('hy');
+              console.log(idUser)
                 //Erreur: le paramètre WHERE "mail" a une valeur "non définie" non valide
                 //userId = user.id;
               })
