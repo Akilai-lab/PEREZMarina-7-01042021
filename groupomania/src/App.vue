@@ -95,13 +95,7 @@ export default {
     <div class="blocInfo">
       <div id="informationsUser">
         <!--list acceder aux différentes parties du site-->
-        <ul class="params" v-if="auth == false">
-          <li>
-          </li>
-          <li>
-          </li>
-          <li>
-          </li>
+        <ul class="params" v-if="auth == false" style="display: none;">
         </ul>
         <ul class="params" v-if="auth == true">
           <li>
@@ -295,6 +289,14 @@ header {
         }
       }
     }
+  }
+}
+@media all and (max-width: 420px) {
+  .myAccount, .msg, .groups{
+    flex-direction: column !important;
+  }
+  .myAccount img, .msg img, .groups img {
+    width: 30% !important;
   }
 }
 </style>
