@@ -9,7 +9,6 @@ exports.posts = async (req , res, next) =>{
     const token = req.headers.authorization.split(' ')[1];
     const decodedToken = jwt.verify(token, 'RANDOM_TOKEN_SECRET');
     const userId = decodedToken.userId;
-
     const postsObject = req.body;
     console.log(req.body.message)
     var d = new Date();
@@ -18,73 +17,74 @@ exports.posts = async (req , res, next) =>{
     var d = new Date();
     var hours = d.getHours() + ":" + d.getMinutes() + ":" + d.getSeconds();
     console.log(hours);
-    if (req.body.message != "") {
-        Posts.create({ //Cannot read property 'filename' of undefined
-            'message': postsObject.message, 
-            'date': date,
-            'time':hours,
-            'userId' : userId
-        })
-        .then(() => {
-            console.log(userId);
-            //console.log(Posts);
-            res.sendStatus(200);
-        })
-        .catch(error => {
-            console.log(error);
-            res.status(400).json({ error })
-        });
+    let image;
+    let message;
+    if(req.file) {
+        image = `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
     }
-    if(req.file.filename != undefined && req.body.message!="") {
-        Posts.create({ //Cannot read property 'filename' of undefined
-            'message': postsObject.message, 
-            'date': date,
-            'time':hours,
-            'media': `${req.protocol}://${req.get('host')}/images/${req.file.filename}`,
-            //(node:13208) UnhandledPromiseRejectionWarning: ReferenceError: userId is not defined
-            'userId' : userId
-        })
-        .then(() => {
-            console.log(userId);
-            //console.log(Posts);
-            res.sendStatus(200);
-        })
-        .catch(error => {
-            console.log(error);
-            res.status(400).json({ error })
-        });
+    if(req.body.message) {
+        message = req.body.message
     }
-    else if(req.file.filename != undefined && req.body.message=== "") {
-        Posts.create({ //Cannot read property 'filename' of undefined
-            'date': date,
-            'time':hours,
-            'media': `${req.protocol}://${req.get('host')}/images/${req.file.filename}`,
-            //(node:13208) UnhandledPromiseRejectionWarning: ReferenceError: userId is not defined
-            'userId' : userId
-        })
-        .then(() => {
-            console.log(userId);
-            //console.log(Posts);
-            res.sendStatus(200);
-        })
-        .catch(error => {
-            console.log(error);
-            res.status(400).json({ error })
-        });
-    }  
+    Posts.create({ //Cannot read property 'filename' of undefined
+        'message': message, 
+        'date': date,
+        'time':hours,
+        'media': image,
+        //(node:13208) UnhandledPromiseRejectionWarning: ReferenceError: userId is not defined
+        'userId' : userId
+    })
+    .then(() => {
+        console.log(userId);
+        //console.log(Posts);
+        res.sendStatus(200);
+    })
+    .catch(error => {
+        console.log(error);
+        res.status(400).json({ error })
+    });
+        /*if (req.body.message) {
+            Posts.create({ //Cannot read property 'filename' of undefined
+                'message': postsObject.message, 
+                'date': date,
+                'time':hours,
+                'userId' : userId
+            })
+            .then(() => {
+                console.log(userId);
+                //console.log(Posts);
+                res.sendStatus(200);
+            })
+            .catch(error => {
+                console.log(error);
+                res.status(400).json({ error })
+            });
+        }
+        if(req.file.filename) {
+            Posts.create({ //Cannot read property 'filename' of undefined
+                'date': date,
+                'time':hours,
+                'media': `${req.protocol}://${req.get('host')}/images/${req.file.filename}`,
+                //(node:13208) UnhandledPromiseRejectionWarning: ReferenceError: userId is not defined
+                'userId' : userId
+            })
+            .then(() => {
+                console.log(userId);
+                //console.log(Posts);
+                res.sendStatus(200);
+            })
+            .catch(error => {
+                console.log(error);
+                res.status(400).json({ error })
+            });
+        } */
 };
 
 exports.editPost = async (req, res, next) => {
     // on souhaite récupérer le dernier index inséré dans la base de données et l'utiliser
-    /*const token = req.headers.authorization.split(' ')[1];
-    const decodedToken = jwt.verify(token, 'RANDOM_TOKEN_SECRET');
-    const userId = decodedToken.userId;*/
-    //statut 404 unautorized
-        console.log('je suis ici')
         const posts = Posts.findAll()
         .then(posts => {
             console.log('et je suis là')
-            console.log(posts);
+            //console.log(posts);
             posts.forEach((Posts) => {
                 postId = Posts.id;
                 //media = String(Posts.media);
@@ -92,8 +92,9 @@ exports.editPost = async (req, res, next) => {
                 console.log(Posts.message);
                 console.log(Posts.media);
                 console.log(Posts.date);
-                console.log(Posts.postId)
-            });
+                console.log(postId);
+                console.log(Posts.userId);
+            })
             res.send(posts);
             res.sendStatus(200);
         })
@@ -113,91 +114,52 @@ exports.modifyPost = async (req, res, next) => {
     const handleError = (error) => {
         error => res.status(500).json({ error })
     }
-    console.log(req.body)
-    if(userId === userId) {
-        if(req.body.message != "") {
-            //créer une erreur
-            Posts.findOne({ where: { id: req.body.postId, userId: userId} })
+    console.log(req.body, userId);
+    let status;
+    User.findOne({ where: {id: userId} })
+    .then(user=> {
+        status = user.status;
+    })
+    if(status === 1 || userId === userId) {
+        console.log(userId);
+        let message = '' ;
+        let image = '';
+        Posts.findOne({ where: { id: req.body.postId} })
             .then(post => {
-                post.update({
-                    'message': req.body.message
-                })
-                console.log(post);
-                console.log('test1');
-                res.send(post);
+                message = post.message
+                image = post.media;
+                    if(req.body.message != ""){
+                        message = req.body.message;
+                    } 
+    /**-S’il n’y a pas d’image sur le post ERREUR (Impossible d’ajoute l’image) à faire fonctionner */
+                    if(req.file){
+                        const filename = post.media.split("/images/")[1];
+                        console.log(filename);
+                        fs.unlink(`images/${filename}`, function (err) {
+                          if (err) throw err;
+                          // if no error, file has been deleted successfully
+                          console.log('File deleted!');
+                          console.log(filename);
+                        });
+                        image = `${req.protocol}://${req.get('host')}/images/${req.file.filename}`;
+                    }
+                    console.log(image);
+                    post.update({
+                        message: message,
+                        media : image
+                    })
+                    console.log(message);
+                    console.log(image);
+                    console.log('post');
+                    console.log(post);
+                    // console.log('admin');
+                    res.send(post);
+                // })
+
+                
             })
             .then(handleSuccessfulDeletion)
             .catch(handleError)
-        }
-        if(req.file.filename != undefined && req.body.message!="") {
-            Posts.findOne({ where: { id: req.body.postId, userId: userId} })
-            .then(post => {
-                post.update({
-                    'message': req.body.message,
-                    'media' : `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
-                })
-                console.log(post);
-                console.log('test1');
-                res.send(post);
-            })
-            .then(handleSuccessfulDeletion)
-            .catch(handleError)
-        }
-        else if(req.file.filename != undefined && req.body.message == "") {
-            Posts.findOne({ where: { id: req.body.postId, userId: userId} })
-            .then(post => {
-                post.update({
-                    'media' : `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
-                })
-                console.log(post);
-                console.log('test1');
-                res.send(post);
-            })
-            .then(handleSuccessfulDeletion)
-            .catch(handleError)
-        }
-    }
-    else if(userId === 11) {
-        if(req.body.message != "") {
-            Posts.findOne({ where: { id: req.body.postId} })
-            .then(post => {
-                post.update({
-                    'message': req.body.message
-                })
-                console.log(post);
-                console.log('test1');
-                res.send(post);
-            })
-            .then(handleSuccessfulDeletion)
-            .catch(handleError)
-        }
-        if(req.file.filename && req.body.message!="") {
-            Posts.findOne({ where: { id: req.body.postId} })
-            .then(post => {
-                post.update({
-                    'message': req.body.message,
-                    'media' : `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
-                })
-                console.log(post);
-                console.log('test1');
-                res.send(post);
-            })
-            .then(handleSuccessfulDeletion)
-            .catch(handleError)
-        }
-        else if(req.file.filename && req.body.message == "") {
-            Posts.findOne({ where: { id: req.body.postId} })
-            .then(post => {
-                post.update({
-                    'media' : `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
-                })
-                console.log(post);
-                console.log('test1');
-                res.send(post);
-            })
-            .then(handleSuccessfulDeletion)
-            .catch(handleError)
-        }
     }
 };
 exports.deletePost = async (req, res, next) => {
