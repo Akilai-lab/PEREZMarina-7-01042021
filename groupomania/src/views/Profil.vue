@@ -88,7 +88,7 @@ export default {
           this.output = error;
         });
 
-        axios.get("http://localhost:3030/api/account/",{
+        axios.get("http://localhost:3030/api/account",{
         headers: {
           'Authorization': auth
         }
@@ -155,10 +155,11 @@ export default {
     editeProfil() {
       this.edited = true;
     },
-    newDescript(e) {
-      e.preventDefault();
+    newDescript() {
       var formData = new FormData();
-      formData.append('textDescription', this.descript);
+      if(this.descript != null) {
+        formData.append('textDescription', this.descript);
+      } 
       console.log(...formData);
       console.log(this.descript);
       const monObjet = JSON.parse(localStorage.getItem('token'));
@@ -384,6 +385,8 @@ export default {
       width: 100%;
       margin: 0;
       padding: 0;
+      display: flex;
+      flex-direction: column;
       #detailsUser {
         margin: 0;
         display: flex;
