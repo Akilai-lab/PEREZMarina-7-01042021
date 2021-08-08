@@ -36,17 +36,27 @@ data() {
 
     const monObjet = JSON.parse(localStorage.getItem('token'));
     let auth = 'bearer' + " " + monObjet.token;
-    axios.get("http://localhost:3030/api/account/",{
+    axios.get("http://localhost:3030/api/account/all",{
       headers: {
         'Authorization': auth
       }
     })
     .then(response => {
-      console.log(response.data);
-      this.actualUserId = response.data.userId;
-      this.picture = response.data.media;
-      console.log(response.data.userId)
-      console.log(this.picture);
+      //response data est égal à un compte dans account mais pas celui de redirection
+      console.log(response.data);// est l'userId présent dans la table account
+      /**le but est de vérifier s'il y a dans la bdd un account qui a comme userId le id de l'user */
+      for(let i of response.data) {
+        console.log(this.accountId);
+        console.log(i.userId);
+        console.log(i.media);
+        if(this.accountId == i.userId) {
+          console.log(i.media)
+          this.actualUserId = i.userId;
+          this.picture = i.media;
+          console.log(i.userId);
+          console.log(this.picture);
+        }
+      }
     })
     .catch(function (error) {
       this.output = error;
@@ -217,6 +227,8 @@ data() {
       width: 100%;
       margin: 0;
       padding: 0;
+      display: flex;
+      flex-direction: column;
       .picture {
         img {
           border-radius: 50%;
